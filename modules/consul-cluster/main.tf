@@ -18,13 +18,13 @@ resource "aws_autoscaling_group" "autoscaling_group" {
 
   launch_configuration = aws_launch_configuration.launch_configuration.name
 
-  availability_zones  = var.availability_zones
+  availability_zones = var.availability_zones
   vpc_zone_identifier = var.subnet_ids
 
   # Run a fixed number of instances in the ASG
-  min_size             = var.cluster_size
-  max_size             = var.cluster_size
-  desired_capacity     = var.cluster_size
+  min_size         = var.cluster_size
+  max_size         = var.cluster_size
+  desired_capacity = var.cluster_size
   termination_policies = [var.termination_policies]
 
   health_check_type         = var.health_check_type
@@ -36,21 +36,25 @@ resource "aws_autoscaling_group" "autoscaling_group" {
 
   protect_from_scale_in = var.protect_from_scale_in
 
-  tags = flatten(
-    [
-      {
-        key                 = "Name"
-        value               = var.cluster_name
-        propagate_at_launch = true
-      },
-      {
-        key                 = var.cluster_tag_key
-        value               = var.cluster_tag_value
-        propagate_at_launch = true
-      },
-      var.tags,
-    ]
-  )
+  tag {
+    key                 = "Name"
+    value               = var.cluster_name
+    propagate_at_launch = true
+  }
+  tag  {
+    key = var.cluster_tag_key
+    value = var.cluster_tag_value
+    propagate_at_launch = true
+  }
+
+  dynamic "tag" {
+    for_each = var.tags
+    content {
+      key                 = tag.value["key"]
+      value               = tag.value["value"]
+      propagate_at_launch = tag.value["propagate_at_launch"]
+    }
+  }
 
   dynamic "initial_lifecycle_hook" {
     for_each = var.lifecycle_hooks
