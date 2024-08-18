@@ -20,7 +20,6 @@ resource "aws_launch_template" "launch_template" {
   image_id      = var.ami_id
   instance_type = var.instance_type
   user_data     = var.user_data
-  spot_price    = var.spot_price
 
   iam_instance_profile {
     name = var.enable_iam_setup ? element(
